@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Babushka - Wisdom-Guided Relationship Advisor</title>
+    <title>Ask Babushka - Wisdom-Guided Relationship Advisor</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://clerk.dev/js/clerk.js"></script>
     <style>
         * {
             margin: 0;
@@ -23,6 +24,73 @@
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
+        }
+
+        .auth-container {
+            display: none;
+            text-align: center;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .auth-container.show {
+            display: block;
+        }
+
+        .main-app {
+            display: none;
+        }
+
+        .main-app.show {
+            display: block;
+        }
+
+        .user-info {
+            background: white;
+            border-radius: 15px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .user-details {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #667eea;
+        }
+
+        .user-name {
+            color: #4a4a4a;
+            font-weight: bold;
+        }
+
+        .sign-out-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .sign-out-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4);
         }
 
         .header {
@@ -243,6 +311,22 @@
             to { transform: rotate(360deg); }
         }
 
+        .auth-welcome {
+            font-size: 1.5rem;
+            color: #4a4a4a;
+            margin-bottom: 20px;
+        }
+
+        .auth-description {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .clerk-button {
+            margin: 10px;
+        }
+
         @media (max-width: 600px) {
             .container {
                 padding: 10px;
@@ -272,81 +356,200 @@
             #sendButton {
                 border-radius: 15px;
             }
+
+            .user-info {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
+        <!-- Auth Container (shown when not signed in) -->
+        <div class="auth-container" id="authContainer">
             <span class="babushka-icon">👵🏻</span>
             <h1>Ask Babushka</h1>
-            <p class="subtitle">Wisdom-guided relationship advisor drawing from generations of experience</p>
+            <p class="auth-welcome">Welcome, dear child!</p>
+            <p class="auth-description">Sign in to get personalized wisdom and save your conversation history with Babushka</p>
+            <div id="clerk-signin"></div>
         </div>
 
-        <div class="chat-container">
-            <div class="messages" id="messages">
-                <div class="message bot-message">
-                    <div class="message-bubble">
-                        <div class="wisdom-tag">✨ Ancient Wisdom</div>
-                        Welcome, dear child! I am Babushka, your relationship advisor with the wisdom of many generations. Tell me about your relationship situation, and I will guide you with the practical wisdom that has helped families for centuries. What weighs on your heart today?
+        <!-- Main App (shown when signed in) -->
+        <div class="main-app" id="mainApp">
+            <!-- User Info Bar -->
+            <div class="user-info">
+                <div class="user-details">
+                    <img id="userAvatar" src="" alt="Profile" class="user-avatar">
+                    <span id="userName" class="user-name"></span>
+                </div>
+                <button class="sign-out-btn" onclick="signOut()">
+                    <i class="fas fa-sign-out-alt"></i> Sign Out
+                </button>
+            </div>
+
+            <div class="header">
+                <span class="babushka-icon">👵🏻</span>
+                <h1>Ask Babushka</h1>
+                <p class="subtitle">Wisdom-guided relationship advisor drawing from generations of experience</p>
+            </div>
+
+            <div class="chat-container">
+                <div class="messages" id="messages">
+                    <div class="message bot-message">
+                        <div class="message-bubble">
+                            <div class="wisdom-tag">✨ Ancient Wisdom</div>
+                            Welcome back, dear child! I am Babushka, your relationship advisor with the wisdom of many generations. Tell me about your relationship situation, and I will guide you with the practical wisdom that has helped families for centuries. What weighs on your heart today?
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="typing-indicator" id="typingIndicator">
+                    <span class="wisdom-tag">🤔 Thinking</span>
+                    Babushka is considering your situation<span class="typing-dots">...</span>
+                </div>
+
+                <div class="input-area">
+                    <div class="input-container">
+                        <input type="text" id="userInput" placeholder="Tell Babushka about your relationship situation..." maxlength="500">
+                        <button id="sendButton">
+                            <i class="fas fa-heart"></i> Send
+                        </button>
                     </div>
                 </div>
             </div>
-            
-            <div class="typing-indicator" id="typingIndicator">
-                <span class="wisdom-tag">🤔 Thinking</span>
-                Babushka is considering your situation<span class="typing-dots">...</span>
-            </div>
 
-            <div class="input-area">
-                <div class="input-container">
-                    <input type="text" id="userInput" placeholder="Tell Babushka about your relationship situation..." maxlength="500">
-                    <button id="sendButton">
-                        <i class="fas fa-heart"></i> Send
-                    </button>
+            <div class="examples">
+                <h3><i class="fas fa-lightbulb"></i> Need inspiration? Try asking about:</h3>
+                <div class="example-buttons">
+                    <button class="example-button" onclick="fillInput('My partner and I keep fighting about money')">Money disagreements</button>
+                    <button class="example-button" onclick="fillInput('I feel like my partner doesn\'t listen to me')">Communication issues</button>
+                    <button class="example-button" onclick="fillInput('We\'re thinking about moving in together')">Taking next steps</button>
+                    <button class="example-button" onclick="fillInput('My partner\'s family doesn\'t like me')">Family dynamics</button>
+                    <button class="example-button" onclick="fillInput('We have different life goals')">Future planning</button>
+                    <button class="example-button" onclick="fillInput('I\'m not sure if this relationship is right for me')">Relationship doubts</button>
                 </div>
-            </div>
-        </div>
-
-        <div class="examples">
-            <h3><i class="fas fa-lightbulb"></i> Need inspiration? Try asking about:</h3>
-            <div class="example-buttons">
-                <button class="example-button" onclick="fillInput('My partner and I keep fighting about money')">Money disagreements</button>
-                <button class="example-button" onclick="fillInput('I feel like my partner doesn\'t listen to me')">Communication issues</button>
-                <button class="example-button" onclick="fillInput('We\'re thinking about moving in together')">Taking next steps</button>
-                <button class="example-button" onclick="fillInput('My partner\'s family doesn\'t like me')">Family dynamics</button>
-                <button class="example-button" onclick="fillInput('We have different life goals')">Future planning</button>
-                <button class="example-button" onclick="fillInput('I\'m not sure if this relationship is right for me')">Relationship doubts</button>
             </div>
         </div>
     </div>
 
     <script>
+        // Replace with your actual Clerk publishable key for Babushka
+        const CLERK_PUBLISHABLE_KEY = 'pk_test_cXVhbGl0eS1iZWFnbGUtMzAuY2xlcmsuYWNjb3VudHMuZGV2JA';
         const API_BASE_URL = 'https://babushka-production.up.railway.app';
+        
+        let clerk;
+        let currentUser = null;
+        let userToken = null;
+
+        // Initialize Clerk
+        async function initClerk() {
+            try {
+                clerk = new Clerk(CLERK_PUBLISHABLE_KEY);
+                await clerk.load();
+
+                // Check if user is already signed in
+                if (clerk.user) {
+                    await handleSignedIn(clerk.user);
+                } else {
+                    showAuthContainer();
+                }
+
+                // Mount sign-in component
+                clerk.mountSignIn(document.getElementById('clerk-signin'), {
+                    signUpUrl: window.location.href,
+                    afterSignInUrl: window.location.href,
+                    redirectUrl: window.location.href
+                });
+
+                // Listen for auth changes
+                clerk.addListener((event) => {
+                    if (event.type === 'user:signed_in') {
+                        handleSignedIn(event.user);
+                    } else if (event.type === 'user:signed_out') {
+                        handleSignedOut();
+                    }
+                });
+
+            } catch (error) {
+                console.error('Error initializing Clerk:', error);
+                // Show app without auth if Clerk fails
+                showMainApp();
+            }
+        }
+
+        async function handleSignedIn(user) {
+            currentUser = user;
+            try {
+                userToken = await user.getToken();
+            } catch (error) {
+                console.error('Error getting token:', error);
+            }
+            
+            // Update user info
+            document.getElementById('userAvatar').src = user.imageUrl || '/default-avatar.png';
+            document.getElementById('userName').textContent = user.firstName || user.emailAddresses[0].emailAddress;
+            
+            showMainApp();
+        }
+
+        function handleSignedOut() {
+            currentUser = null;
+            userToken = null;
+            showAuthContainer();
+        }
+
+        function showAuthContainer() {
+            document.getElementById('authContainer').classList.add('show');
+            document.getElementById('mainApp').classList.remove('show');
+        }
+
+        function showMainApp() {
+            document.getElementById('authContainer').classList.remove('show');
+            document.getElementById('mainApp').classList.add('show');
+        }
+
+        async function signOut() {
+            try {
+                await clerk.signOut();
+            } catch (error) {
+                console.error('Error signing out:', error);
+            }
+        }
+
+        // Chat functionality
         const messagesContainer = document.getElementById('messages');
         const userInput = document.getElementById('userInput');
         const sendButton = document.getElementById('sendButton');
         const typingIndicator = document.getElementById('typingIndicator');
 
-        // Handle sending messages
         async function sendMessage() {
             const message = userInput.value.trim();
             if (!message) return;
 
-            // Add user message
             addMessage(message, 'user');
             userInput.value = '';
             
-            // Show typing indicator
             showTyping();
             
             try {
+                const headers = {
+                    'Content-Type': 'application/json',
+                };
+
+                // Add auth token if available
+                if (userToken) {
+                    headers['Authorization'] = `Bearer ${userToken}`;
+                }
+
                 const response = await fetch(`${API_BASE_URL}/advice`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ situation: message }),
+                    headers: headers,
+                    body: JSON.stringify({ 
+                        situation: message,
+                        user_id: currentUser?.id || null
+                    }),
                 });
 
                 if (!response.ok) {
@@ -355,7 +558,6 @@
 
                 const data = await response.json();
                 
-                // Hide typing indicator and add response
                 hideTyping();
                 addMessage(data.advice, 'bot');
                 
@@ -389,7 +591,6 @@
             messageDiv.appendChild(bubbleDiv);
             messagesContainer.appendChild(messageDiv);
             
-            // Scroll to bottom
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
 
@@ -420,8 +621,8 @@
             }
         });
 
-        // Auto-focus input
-        userInput.focus();
+        // Initialize everything when page loads
+        window.addEventListener('load', initClerk);
     </script>
 </body>
 </html>
