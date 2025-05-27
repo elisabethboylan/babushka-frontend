@@ -492,13 +492,18 @@
                     showAuthContainer();
                 }
 
-                // Mount sign-in component
+                // Mount sign-in component initially
                 if (document.getElementById('clerk-signin')) {
-                    clerk.mountSignIn(document.getElementById('clerk-signin'), {
-                        signUpUrl: window.location.href,
-                        afterSignInUrl: window.location.href,
-                        redirectUrl: window.location.href
-                    });
+                    try {
+                        clerk.mountSignIn(document.getElementById('clerk-signin'), {
+                            signUpUrl: window.location.href,
+                            afterSignInUrl: window.location.href,
+                            redirectUrl: window.location.href
+                        });
+                        console.log('Initial Clerk sign-in mounted');
+                    } catch (error) {
+                        console.error('Error mounting initial sign-in:', error);
+                    }
                 }
 
                 // Listen for auth changes
@@ -555,6 +560,24 @@
             console.log('Showing auth container');
             document.getElementById('authContainer').classList.add('show');
             document.getElementById('mainApp').classList.remove('show');
+            
+            // Ensure Clerk sign-in is mounted when showing auth container
+            if (clerk && document.getElementById('clerk-signin')) {
+                // Clear and remount to ensure it appears
+                document.getElementById('clerk-signin').innerHTML = '';
+                setTimeout(() => {
+                    try {
+                        clerk.mountSignIn(document.getElementById('clerk-signin'), {
+                            signUpUrl: window.location.href,
+                            afterSignInUrl: window.location.href,
+                            redirectUrl: window.location.href
+                        });
+                        console.log('Clerk sign-in mounted successfully');
+                    } catch (error) {
+                        console.error('Error mounting sign-in:', error);
+                    }
+                }, 100);
+            }
         }
 
         function showMainApp() {
