@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ask Babushka - Wisdom-Guided Relationship Advisor</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <script src="https://unpkg.com/@clerk/clerk-js@4/dist/clerk.browser.js"></script> 
+    <script src="https://unpkg.com/@clerk/clerk-js@4/dist/clerk.browser.js"></script>
     <style>
         * {
             margin: 0;
@@ -54,10 +53,14 @@
             border-radius: 15px;
             padding: 15px 20px;
             margin-bottom: 20px;
-            display: flex;
+            display: none; /* Hidden by default */
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .user-info.show {
+            display: flex;
         }
 
         .user-details {
@@ -324,8 +327,23 @@
             font-size: 1.1rem;
         }
 
-        .clerk-button {
-            margin: 10px;
+        .sign-in-link {
+            background: #f8f9fa;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 8px 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .sign-in-link:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: translateY(-1px);
         }
 
         @media (max-width: 600px) {
@@ -375,12 +393,15 @@
             <p class="auth-welcome">Welcome, dear child!</p>
             <p class="auth-description">Sign in to get personalized wisdom and save your conversation history with Babushka</p>
             <div id="clerk-signin"></div>
+            <p style="margin-top: 20px; color: #666;">
+                Or <a href="#" class="sign-in-link" onclick="showMainApp(); return false;">continue without signing in</a>
+            </p>
         </div>
 
-        <!-- Main App (shown when signed in) -->
+        <!-- Main App (shown when signed in OR anonymous) -->
         <div class="main-app" id="mainApp">
-            <!-- User Info Bar -->
-            <div class="user-info">
+            <!-- User Info Bar (only shown when authenticated) -->
+            <div class="user-info" id="userInfo">
                 <div class="user-details">
                     <img id="userAvatar" src="" alt="Profile" class="user-avatar">
                     <span id="userName" class="user-name"></span>
@@ -394,14 +415,17 @@
                 <span class="babushka-icon">👵🏻</span>
                 <h1>Ask Babushka</h1>
                 <p class="subtitle">Wisdom-guided relationship advisor drawing from generations of experience</p>
+                <p id="authStatus" style="margin-top: 10px; color: #666; font-size: 0.9rem;">
+                    <a href="#" class="sign-in-link" onclick="showAuthContainer(); return false;">Sign in for personalized experience</a>
+                </p>
             </div>
 
             <div class="chat-container">
                 <div class="messages" id="messages">
                     <div class="message bot-message">
                         <div class="message-bubble">
-                            <div class="wisdom-tag">✨ Tried and True Wisdom</div>
-                            Welcome back, dear child! I am Babushka, your relationship advisor with the wisdom of many generations. Tell me about your relationship situation, and I will guide you with the practical wisdom that has helped families for centuries. What weighs on your heart today?
+                            <div class="wisdom-tag">✨ Ancient Wisdom</div>
+                            Welcome, dear child! I am Babushka, your relationship advisor with the wisdom of many generations. Tell me about your relationship situation, and I will guide you with the practical wisdom that has helped families for centuries. What weighs on your heart today?
                         </div>
                     </div>
                 </div>
@@ -447,25 +471,39 @@
         // Initialize Clerk
         async function initClerk() {
             try {
+                // Check if Clerk is available
+                if (typeof Clerk === 'undefined') {
+                    console.error('Clerk library not loaded - falling back to anonymous mode');
+                    showMainApp();
+                    return;
+                }
+
+                console.log('Initializing Clerk...');
                 clerk = new Clerk(CLERK_PUBLISHABLE_KEY);
                 await clerk.load();
+                console.log('Clerk loaded successfully');
 
                 // Check if user is already signed in
                 if (clerk.user) {
+                    console.log('User found:', clerk.user);
                     await handleSignedIn(clerk.user);
                 } else {
+                    console.log('No user found, showing auth');
                     showAuthContainer();
                 }
 
                 // Mount sign-in component
-                clerk.mountSignIn(document.getElementById('clerk-signin'), {
-                    signUpUrl: window.location.href,
-                    afterSignInUrl: window.location.href,
-                    redirectUrl: window.location.href
-                });
+                if (document.getElementById('clerk-signin')) {
+                    clerk.mountSignIn(document.getElementById('clerk-signin'), {
+                        signUpUrl: window.location.href,
+                        afterSignInUrl: window.location.href,
+                        redirectUrl: window.location.href
+                    });
+                }
 
                 // Listen for auth changes
                 clerk.addListener((event) => {
+                    console.log('Clerk event:', event.type);
                     if (event.type === 'user:signed_in') {
                         handleSignedIn(event.user);
                     } else if (event.type === 'user:signed_out') {
@@ -481,9 +519,11 @@
         }
 
         async function handleSignedIn(user) {
+            console.log('Handling signed in user:', user);
             currentUser = user;
             try {
                 userToken = await user.getToken();
+                console.log('Got user token');
             } catch (error) {
                 console.error('Error getting token:', error);
             }
@@ -492,30 +532,51 @@
             document.getElementById('userAvatar').src = user.imageUrl || '/default-avatar.png';
             document.getElementById('userName').textContent = user.firstName || user.emailAddresses[0].emailAddress;
             
+            // Show authenticated state
+            document.getElementById('userInfo').classList.add('show');
+            document.getElementById('authStatus').innerHTML = '<span style="color: #667eea;">✓ Signed in - conversations saved</span>';
+            
             showMainApp();
         }
 
         function handleSignedOut() {
+            console.log('Handling signed out');
             currentUser = null;
             userToken = null;
+            
+            // Hide user info
+            document.getElementById('userInfo').classList.remove('show');
+            document.getElementById('authStatus').innerHTML = '<a href="#" class="sign-in-link" onclick="showAuthContainer(); return false;">Sign in for personalized experience</a>';
+            
             showAuthContainer();
         }
 
         function showAuthContainer() {
+            console.log('Showing auth container');
             document.getElementById('authContainer').classList.add('show');
             document.getElementById('mainApp').classList.remove('show');
         }
 
         function showMainApp() {
+            console.log('Showing main app');
             document.getElementById('authContainer').classList.remove('show');
             document.getElementById('mainApp').classList.add('show');
         }
 
         async function signOut() {
+            console.log('Signing out...');
             try {
-                await clerk.signOut();
+                if (clerk) {
+                    await clerk.signOut();
+                    console.log('Signed out successfully');
+                } else {
+                    console.log('No clerk instance, handling manually');
+                    handleSignedOut();
+                }
             } catch (error) {
                 console.error('Error signing out:', error);
+                // Force sign out state
+                handleSignedOut();
             }
         }
 
@@ -542,6 +603,9 @@
                 // Add auth token if available
                 if (userToken) {
                     headers['Authorization'] = `Bearer ${userToken}`;
+                    console.log('Sending authenticated request');
+                } else {
+                    console.log('Sending anonymous request');
                 }
 
                 const response = await fetch(`${API_BASE_URL}/advice`, {
@@ -623,7 +687,10 @@
         });
 
         // Initialize everything when page loads
-        window.addEventListener('load', initClerk);
+        window.addEventListener('load', () => {
+            console.log('Page loaded, initializing...');
+            initClerk();
+        });
     </script>
 </body>
 </html>
