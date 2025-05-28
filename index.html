@@ -15,7 +15,7 @@
 
         body {
             font-family: 'Georgia', serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #03ABAF 0%, #05776F 100%);
             min-height: 100vh;
             color: #333;
         }
@@ -29,11 +29,12 @@
         .auth-container {
             display: none;
             text-align: center;
-            background: white;
+            background: #F7F6F9;
             border-radius: 20px;
             padding: 40px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 30px rgba(5, 119, 111, 0.2);
             margin-bottom: 30px;
+            border: 2px solid #F3B807;
         }
 
         .auth-container.show {
@@ -49,14 +50,15 @@
         }
 
         .user-info {
-            background: white;
+            background: #F7F6F9;
             border-radius: 15px;
             padding: 15px 20px;
             margin-bottom: 20px;
-            display: none; /* Hidden by default */
+            display: none;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(5, 119, 111, 0.15);
+            border: 1px solid #BD9662;
         }
 
         .user-info.show {
@@ -73,17 +75,17 @@
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            border: 2px solid #667eea;
+            border: 2px solid #F3B807;
         }
 
         .user-name {
-            color: #4a4a4a;
+            color: #05776F;
             font-weight: bold;
         }
 
         .sign-out-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: linear-gradient(135deg, #B93C20 0%, #05776F 100%);
+            color: #F7F6F9;
             border: none;
             padding: 8px 15px;
             border-radius: 15px;
@@ -94,51 +96,59 @@
 
         .sign-out-btn:hover {
             transform: translateY(-1px);
-            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 3px 10px rgba(185, 60, 32, 0.4);
         }
 
         .header {
             text-align: center;
             margin-bottom: 30px;
-            background: white;
+            background: #F7F6F9;
             border-radius: 20px;
             padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 30px rgba(5, 119, 111, 0.15);
+            border: 2px solid #F3B807;
         }
 
-        .babushka-icon {
-            font-size: 4rem;
-            margin-bottom: 20px;
+        .babushka-image {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 20px auto;
             display: block;
+            border-radius: 50%;
+            border: 3px solid #F3B807;
+            box-shadow: 0 5px 20px rgba(5, 119, 111, 0.3);
+            object-fit: cover;
         }
 
         h1 {
             font-size: 2.5rem;
-            color: #4a4a4a;
+            color: #05776F;
             margin-bottom: 10px;
             font-weight: bold;
+            text-shadow: 0 1px 2px rgba(243, 184, 7, 0.3);
         }
 
         .subtitle {
             font-size: 1.2rem;
-            color: #666;
+            color: #03ABAF;
             font-style: italic;
         }
 
         .chat-container {
-            background: white;
+            background: #F7F6F9;
             border-radius: 20px;
             padding: 0;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 30px rgba(5, 119, 111, 0.15);
             overflow: hidden;
             margin-bottom: 20px;
+            border: 2px solid #BD9662;
         }
 
         .messages {
             height: 400px;
             overflow-y: auto;
             padding: 20px;
-            background: #f8f9fa;
+            background: linear-gradient(to bottom, #F7F6F9 0%, rgba(247, 246, 249, 0.95) 100%);
         }
 
         .message {
@@ -156,41 +166,44 @@
         }
 
         .user-message .message-bubble {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: linear-gradient(135deg, #03ABAF 0%, #05776F 100%);
+            color: #F7F6F9;
             border-radius: 20px 20px 5px 20px;
             padding: 15px 20px;
             display: inline-block;
             max-width: 70%;
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 5px 15px rgba(3, 171, 175, 0.3);
+            border: 1px solid #BD9662;
         }
 
         .bot-message .message-bubble {
-            background: #fff;
-            color: #333;
+            background: #F7F6F9;
+            color: #05776F;
             border-radius: 20px 20px 20px 5px;
             padding: 15px 20px;
             display: inline-block;
             max-width: 80%;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            border-left: 5px solid #667eea;
+            box-shadow: 0 5px 15px rgba(5, 119, 111, 0.1);
+            border-left: 5px solid #F3B807;
+            border: 1px solid #BD9662;
         }
 
         .wisdom-tag {
-            background: linear-gradient(45deg, #ffd700, #ffed4e);
-            color: #8b4513;
+            background: linear-gradient(45deg, #F3B807, #BD9662);
+            color: #05776F;
             padding: 5px 12px;
             border-radius: 15px;
             font-size: 0.8rem;
             font-weight: bold;
             margin-bottom: 10px;
             display: inline-block;
+            text-shadow: 0 1px 1px rgba(247, 246, 249, 0.8);
         }
 
         .input-area {
             padding: 20px;
-            background: white;
-            border-top: 2px solid #f0f0f0;
+            background: #F7F6F9;
+            border-top: 2px solid #F3B807;
         }
 
         .input-container {
@@ -202,22 +215,28 @@
         #userInput {
             flex: 1;
             padding: 15px 20px;
-            border: 2px solid #e0e0e0;
+            border: 2px solid #BD9662;
             border-radius: 25px;
             font-size: 1rem;
             font-family: inherit;
             outline: none;
             transition: all 0.3s ease;
+            background: #F7F6F9;
+            color: #05776F;
         }
 
         #userInput:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 10px rgba(102, 126, 234, 0.2);
+            border-color: #03ABAF;
+            box-shadow: 0 0 10px rgba(3, 171, 175, 0.2);
+        }
+
+        #userInput::placeholder {
+            color: #8bb3b1;
         }
 
         #sendButton {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: linear-gradient(135deg, #03ABAF 0%, #05776F 100%);
+            color: #F7F6F9;
             border: none;
             border-radius: 25px;
             padding: 15px 25px;
@@ -225,11 +244,13 @@
             cursor: pointer;
             transition: all 0.3s ease;
             font-weight: bold;
+            border: 1px solid #F3B807;
         }
 
         #sendButton:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 15px rgba(3, 171, 175, 0.4);
+            background: linear-gradient(135deg, #05776F 0%, #03ABAF 100%);
         }
 
         #sendButton:disabled {
@@ -241,7 +262,7 @@
         .typing-indicator {
             display: none;
             padding: 15px 20px;
-            color: #666;
+            color: #05776F;
             font-style: italic;
         }
 
@@ -256,14 +277,15 @@
         }
 
         .examples {
-            background: white;
+            background: #F7F6F9;
             border-radius: 20px;
             padding: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 30px rgba(5, 119, 111, 0.15);
+            border: 2px solid #BD9662;
         }
 
         .examples h3 {
-            color: #4a4a4a;
+            color: #05776F;
             margin-bottom: 15px;
             font-size: 1.3rem;
         }
@@ -275,37 +297,38 @@
         }
 
         .example-button {
-            background: #f8f9fa;
-            border: 2px solid #e9ecef;
+            background: rgba(247, 246, 249, 0.9);
+            border: 2px solid #BD9662;
             border-radius: 15px;
             padding: 10px 15px;
             cursor: pointer;
             transition: all 0.3s ease;
             font-size: 0.9rem;
-            color: #495057;
+            color: #05776F;
         }
 
         .example-button:hover {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-color: #667eea;
+            background: linear-gradient(135deg, #03ABAF 0%, #05776F 100%);
+            color: #F7F6F9;
+            border-color: #F3B807;
             transform: translateY(-2px);
+            box-shadow: 0 3px 10px rgba(3, 171, 175, 0.3);
         }
 
         .error-message {
-            background: #fff5f5;
-            color: #e53e3e;
+            background: rgba(185, 60, 32, 0.1);
+            color: #B93C20;
             padding: 15px;
             border-radius: 10px;
             margin: 10px 0;
-            border-left: 5px solid #e53e3e;
+            border-left: 5px solid #B93C20;
         }
 
         .loading {
             display: inline-block;
             width: 20px;
             height: 20px;
-            border: 2px solid #ffffff;
+            border: 2px solid #F7F6F9;
             border-radius: 50%;
             border-top-color: transparent;
             animation: spin 1s ease-in-out infinite;
@@ -317,20 +340,20 @@
 
         .auth-welcome {
             font-size: 1.5rem;
-            color: #4a4a4a;
+            color: #05776F;
             margin-bottom: 20px;
         }
 
         .auth-description {
-            color: #666;
+            color: #03ABAF;
             margin-bottom: 30px;
             font-size: 1.1rem;
         }
 
         .sign-in-link {
-            background: #f8f9fa;
-            border: 2px solid #667eea;
-            color: #667eea;
+            background: rgba(247, 246, 249, 0.9);
+            border: 2px solid #F3B807;
+            color: #05776F;
             padding: 8px 15px;
             border-radius: 15px;
             cursor: pointer;
@@ -341,9 +364,52 @@
         }
 
         .sign-in-link:hover {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: linear-gradient(135deg, #03ABAF 0%, #05776F 100%);
+            color: #F7F6F9;
             transform: translateY(-1px);
+            border-color: #BD9662;
+        }
+
+        /* Elegant decorative elements */
+        .header::before {
+            content: "✦";
+            display: block;
+            font-size: 1.5rem;
+            color: #F3B807;
+            margin-bottom: 10px;
+            opacity: 0.8;
+        }
+
+        .wisdom-tag::before {
+            content: "✧ ";
+            color: #05776F;
+        }
+
+        /* Subtle accent touches */
+        .chat-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #F3B807, #BD9662, #F3B807);
+            border-radius: 20px 20px 0 0;
+        }
+
+        .examples::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #BD9662, transparent);
+            border-radius: 0 0 20px 20px;
+        }
+
+        .header, .chat-container, .examples {
+            position: relative;
         }
 
         @media (max-width: 600px) {
@@ -388,12 +454,12 @@
     <div class="container">
         <!-- Auth Container (shown when not signed in) -->
         <div class="auth-container" id="authContainer">
-            <span class="babushka-icon">👵🏻</span>
+            <img src="babushka.png" alt="Babushka" class="babushka-image">
             <h1>Ask Babushka</h1>
             <p class="auth-welcome">Welcome, dear child!</p>
             <p class="auth-description">Sign in to get personalized wisdom and save your conversation history with Babushka</p>
             <div id="clerk-signin"></div>
-            <p style="margin-top: 20px; color: #666;">
+            <p style="margin-top: 20px; color: #03ABAF;">
                 Or <a href="#" class="sign-in-link" onclick="showMainApp(); return false;">continue without signing in</a>
             </p>
         </div>
@@ -412,10 +478,10 @@
             </div>
 
             <div class="header">
-                <span class="babushka-icon">👵🏻</span>
+                <img src="babushka.png" alt="Babushka" class="babushka-image">
                 <h1>Ask Babushka</h1>
                 <p class="subtitle">Wisdom-guided relationship advisor drawing from generations of experience</p>
-                <p id="authStatus" style="margin-top: 10px; color: #666; font-size: 0.9rem;">
+                <p id="authStatus" style="margin-top: 10px; color: #03ABAF; font-size: 0.9rem;">
                     <a href="#" class="sign-in-link" onclick="showAuthContainer(); return false;">Sign in for personalized experience</a>
                 </p>
             </div>
@@ -424,14 +490,14 @@
                 <div class="messages" id="messages">
                     <div class="message bot-message">
                         <div class="message-bubble">
-                            <div class="wisdom-tag">✨ Ancient Wisdom</div>
+                            <div class="wisdom-tag">Ancient Wisdom</div>
                             Welcome, dear child! I am Babushka, your relationship advisor with the wisdom of many generations. Tell me about your relationship situation, and I will guide you with the practical wisdom that has helped families for centuries. What weighs on your heart today?
                         </div>
                     </div>
                 </div>
                 
                 <div class="typing-indicator" id="typingIndicator">
-                    <span class="wisdom-tag">🤔 Thinking</span>
+                    <span class="wisdom-tag">Thinking</span>
                     Babushka is considering your situation<span class="typing-dots">...</span>
                 </div>
 
@@ -539,7 +605,7 @@
             
             // Show authenticated state
             document.getElementById('userInfo').classList.add('show');
-            document.getElementById('authStatus').innerHTML = '<span style="color: #667eea;">✓ Signed in - conversations saved</span>';
+            document.getElementById('authStatus').innerHTML = '<span style="color: #03ABAF;">✓ Signed in - conversations saved</span>';
             
             showMainApp();
         }
@@ -666,7 +732,7 @@
             if (sender === 'bot' && !isError) {
                 const wisdomTag = document.createElement('div');
                 wisdomTag.className = 'wisdom-tag';
-                wisdomTag.innerHTML = '✨ Babushka\'s Wisdom';
+                wisdomTag.innerHTML = 'Babushka\'s Wisdom';
                 bubbleDiv.appendChild(wisdomTag);
             }
             
@@ -717,4 +783,3 @@
     </script>
 </body>
 </html>
-
