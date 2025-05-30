@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ask Babushka - Wisdom-Guided Relationship Advisor</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://unpkg.com/@clerk/clerk-js@4/dist/clerk.browser.js"></script>
     <style>
@@ -526,7 +527,7 @@
     </div>
 
     <script>
-        // Replace with your actual Clerk publishable key for Babushka
+        // Updated Clerk publishable key and API configuration
         const CLERK_PUBLISHABLE_KEY = 'pk_live_Y2xlcmsuYXNrYmFidXNoa2EuYWkk';
         const API_BASE_URL = 'https://babushka-production.up.railway.app';
         
@@ -534,7 +535,7 @@
         let currentUser = null;
         let userToken = null;
 
-        // Initialize Clerk
+        // Initialize Clerk with proper domain configuration
         async function initClerk() {
             try {
                 // Check if Clerk is available
@@ -546,7 +547,15 @@
 
                 console.log('Initializing Clerk...');
                 clerk = new Clerk(CLERK_PUBLISHABLE_KEY);
-                await clerk.load();
+                
+                // Load Clerk with domain configuration
+                await clerk.load({
+                    // Set your production domain
+                    domain: 'askbabushka.ai',
+                    // Ensure proper satellite configuration for custom domains
+                    isSatellite: window.location.hostname !== 'askbabushka.ai'
+                });
+                
                 console.log('Clerk loaded successfully');
 
                 // Check if user is already signed in
@@ -558,13 +567,16 @@
                     showAuthContainer();
                 }
 
-                // Mount sign-in component initially
+                // Mount sign-in component with correct URLs
                 if (document.getElementById('clerk-signin')) {
                     try {
                         clerk.mountSignIn(document.getElementById('clerk-signin'), {
-                            signUpUrl: window.location.href,
-                            afterSignInUrl: window.location.href,
-                            redirectUrl: window.location.href
+                            signUpUrl: window.location.origin,
+                            afterSignInUrl: window.location.origin,
+                            redirectUrl: window.location.origin,
+                            // Add routing configuration
+                            routing: 'path',
+                            path: '/sign-in'
                         });
                         console.log('Initial Clerk sign-in mounted');
                     } catch (error) {
@@ -589,14 +601,23 @@
             }
         }
 
+        // Updated handleSignedIn function with JWT template
         async function handleSignedIn(user) {
             console.log('Handling signed in user:', user);
             currentUser = user;
             try {
-                userToken = await user.getToken();
-                console.log('Got user token');
+                // Use your custom JWT template "AskBabushkaAPI"
+                userToken = await user.getToken({ template: "AskBabushkaAPI" });
+                console.log('Got user token with AskBabushkaAPI template');
             } catch (error) {
-                console.error('Error getting token:', error);
+                console.error('Error getting token with template:', error);
+                // Fallback to default token if template fails
+                try {
+                    userToken = await user.getToken();
+                    console.log('Got fallback token');
+                } catch (fallbackError) {
+                    console.error('Error getting fallback token:', fallbackError);
+                }
             }
             
             // Update user info
@@ -634,9 +655,11 @@
                 setTimeout(() => {
                     try {
                         clerk.mountSignIn(document.getElementById('clerk-signin'), {
-                            signUpUrl: window.location.href,
-                            afterSignInUrl: window.location.href,
-                            redirectUrl: window.location.href
+                            signUpUrl: window.location.origin,
+                            afterSignInUrl: window.location.origin,
+                            redirectUrl: window.location.origin,
+                            routing: 'path',
+                            path: '/sign-in'
                         });
                         console.log('Clerk sign-in mounted successfully');
                     } catch (error) {
