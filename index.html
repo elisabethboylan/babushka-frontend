@@ -6,12 +6,12 @@
     <title>Ask Babushka - Wisdom-Guided Relationship Advice</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- Fixed Clerk script - use the general CDN instead of hardcoded domain -->
+    <!-- FIXED: Use the correct Clerk script URL -->
     <script
       async
       crossorigin="anonymous"
       data-clerk-publishable-key="pk_live_Y2xlcmsuYXNrYmFidXNoa2EuYWkk"
-      src="https://brave-fawn-12.clerk.accounts.dev/npm/@clerk/clerk-js@5/dist/clerk.browser.js"
+      src="https://cdnjs.cloudflare.com/ajax/libs/clerk/5.0.0/clerk.browser.js"
       type="text/javascript">
     </script>
     <style>
@@ -534,7 +534,7 @@
     </div>
 
     <script>
-        // Fixed Clerk configuration
+        // Configuration
         const CLERK_PUBLISHABLE_KEY = 'pk_live_Y2xlcmsuYXNrYmFidXNoa2EuYWkk';
         const API_BASE_URL = 'https://babushka-production.up.railway.app';
         
@@ -542,48 +542,50 @@
         let currentUser = null;
         let userToken = null;
 
-        // Fixed Clerk initialization
+        // COMPLETELY REWRITTEN Clerk initialization to fix the constructor issue
         async function initClerk() {
-            try {
-                // Check if Clerk is available
-                if (typeof Clerk === 'undefined') {
-                    console.error('Clerk library not loaded - falling back to anonymous mode');
-                    showMainApp();
-                    return;
-                }
-
-                console.log('Initializing Clerk...');
-                clerk = new Clerk(CLERK_PUBLISHABLE_KEY);
-                
-                // Load Clerk without custom domain configuration
-                await clerk.load({
-                    // Remove custom domain configs that might be causing issues
-                });
-                
-                console.log('Clerk loaded successfully');
-
-                // Check if user is already signed in
-                if (clerk.user) {
-                    console.log('User found:', clerk.user);
-                    await handleSignedIn(clerk.user);
-                } else {
-                    console.log('No user found, showing auth');
-                    showAuthContainer();
-                }
-
-                // Mount sign-in component with minimal configuration
-                if (document.getElementById('clerk-signin')) {
+            let attempts = 0;
+            const maxAttempts = 10;
+            
+            // Wait for Clerk to be available with retry logic
+            while (attempts < maxAttempts) {
+                if (typeof window.Clerk !== 'undefined') {
+                    console.log('Clerk found on window object');
                     try {
-                        clerk.mountSignIn(document.getElementById('clerk-signin'), {
-                            // Minimal configuration - let Clerk use defaults
-                        });
-                        console.log('Initial Clerk sign-in mounted');
+                        clerk = new window.Clerk(CLERK_PUBLISHABLE_KEY);
+                        break;
                     } catch (error) {
-                        console.error('Error mounting initial sign-in:', error);
+                        console.log('Error with window.Clerk, trying Clerk:', error);
                     }
                 }
+                
+                if (typeof Clerk !== 'undefined') {
+                    console.log('Clerk found as global');
+                    try {
+                        clerk = new Clerk(CLERK_PUBLISHABLE_KEY);
+                        break;
+                    } catch (error) {
+                        console.log('Error with global Clerk:', error);
+                    }
+                }
+                
+                attempts++;
+                console.log(`Waiting for Clerk... attempt ${attempts}/${maxAttempts}`);
+                await new Promise(resolve => setTimeout(resolve, 200));
+            }
 
-                // Listen for auth changes
+            if (!clerk) {
+                console.error('Failed to initialize Clerk after multiple attempts');
+                showMainApp(); // Fallback to anonymous mode
+                return;
+            }
+
+            try {
+                console.log('Loading Clerk...');
+                await clerk.load();
+                console.log('Clerk loaded successfully');
+
+                // Set up event listeners
                 clerk.addListener((event) => {
                     console.log('Clerk event:', event.type);
                     if (event.type === 'user:signed_in') {
@@ -593,30 +595,45 @@
                     }
                 });
 
+                // Check current state
+                if (clerk.user) {
+                    console.log('User already signed in:', clerk.user);
+                    await handleSignedIn(clerk.user);
+                } else {
+                    console.log('No user signed in, showing auth');
+                    showAuthContainer();
+                }
+
             } catch (error) {
-                console.error('Error initializing Clerk:', error);
-                // Show app without auth if Clerk fails
-                showMainApp();
+                console.error('Error loading Clerk:', error);
+                showMainApp(); // Fallback to anonymous mode
             }
         }
 
-        // Fixed token handling - remove custom template
+        // Handle signed in user with your custom JWT template
         async function handleSignedIn(user) {
             console.log('Handling signed in user:', user);
             currentUser = user;
+            
             try {
-                // Use default token instead of custom template
-                userToken = await user.getToken();
-                console.log('Got user token successfully');
+                // Use your custom JWT template "AskBabushkaAPI"
+                userToken = await user.getToken({ template: "AskBabushkaAPI" });
+                console.log('Got user token with AskBabushkaAPI template');
             } catch (error) {
-                console.error('Error getting token:', error);
-                // Continue without token for now
-                userToken = null;
+                console.error('Error getting token with AskBabushkaAPI template:', error);
+                try {
+                    // Fallback to default token
+                    userToken = await user.getToken();
+                    console.log('Got fallback token');
+                } catch (fallbackError) {
+                    console.error('Error getting fallback token:', fallbackError);
+                    userToken = null;
+                }
             }
             
-            // Update user info
+            // Update user info display
             document.getElementById('userAvatar').src = user.imageUrl || '/default-avatar.png';
-            document.getElementById('userName').textContent = user.firstName || user.emailAddresses[0].emailAddress;
+            document.getElementById('userName').textContent = user.firstName || user.emailAddresses[0]?.emailAddress || 'User';
             
             // Show authenticated state
             document.getElementById('userInfo').classList.add('show');
@@ -642,18 +659,33 @@
             document.getElementById('authContainer').classList.add('show');
             document.getElementById('mainApp').classList.remove('show');
             
-            // Ensure Clerk sign-in is mounted when showing auth container
+            // Mount sign-in component
             if (clerk && document.getElementById('clerk-signin')) {
-                // Clear and remount to ensure it appears
-                document.getElementById('clerk-signin').innerHTML = '';
+                const signInDiv = document.getElementById('clerk-signin');
+                signInDiv.innerHTML = ''; // Clear any existing content
+                
                 setTimeout(() => {
                     try {
-                        clerk.mountSignIn(document.getElementById('clerk-signin'), {
-                            // Minimal configuration
+                        clerk.mountSignIn(signInDiv, {
+                            signUpUrl: 'https://accounts.askbabushka.ai/sign-up',
+                            afterSignInUrl: window.location.origin,
+                            redirectUrl: window.location.origin
                         });
-                        console.log('Clerk sign-in mounted successfully');
+                        console.log('Sign-in component mounted');
                     } catch (error) {
                         console.error('Error mounting sign-in:', error);
+                        // Create a manual sign-in link as fallback
+                        signInDiv.innerHTML = `
+                            <div style="padding: 20px;">
+                                <p style="color: #05776F; margin-bottom: 15px;">Please use the link below to sign in:</p>
+                                <a href="https://accounts.askbabushka.ai/sign-in" 
+                                   style="background: linear-gradient(135deg, #03ABAF 0%, #05776F 100%); 
+                                          color: #F7F6F9; padding: 10px 20px; border-radius: 15px; 
+                                          text-decoration: none; display: inline-block;">
+                                    Sign In with Clerk
+                                </a>
+                            </div>
+                        `;
                     }
                 }, 100);
             }
@@ -672,12 +704,10 @@
                     await clerk.signOut();
                     console.log('Signed out successfully');
                 } else {
-                    console.log('No clerk instance, handling manually');
                     handleSignedOut();
                 }
             } catch (error) {
                 console.error('Error signing out:', error);
-                // Force sign out state
                 handleSignedOut();
             }
         }
@@ -788,10 +818,22 @@
             }
         });
 
-        // Initialize everything when page loads
+        // Initialize when page loads
         window.addEventListener('load', () => {
             console.log('Page loaded, initializing...');
             initClerk();
+        });
+
+        // Additional initialization attempt when Clerk script loads
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM loaded');
+            // Give a bit more time for the Clerk script to load
+            setTimeout(() => {
+                if (!clerk) {
+                    console.log('Retrying Clerk initialization...');
+                    initClerk();
+                }
+            }, 1000);
         });
     </script>
 </body>
