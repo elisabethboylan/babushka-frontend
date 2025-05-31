@@ -542,16 +542,9 @@
         let userToken = null;
 
         // Initialize Clerk with proper domain configuration
-        // Updated Clerk initialization
-        const CLERK_PUBLISHABLE_KEY = 'pk_live_Y2xlcmsuYXNrYmFidXNoa2EuYWkk';
-        const API_BASE_URL = 'https://babushka-production.up.railway.app';
-        
-        let clerk;
-        let currentUser = null;
-        let userToken = null;
-
         async function initClerk() {
             try {
+                // Check if Clerk is available
                 if (typeof Clerk === 'undefined') {
                     console.error('Clerk library not loaded - falling back to anonymous mode');
                     showMainApp();
@@ -559,44 +552,10 @@
                 }
 
                 console.log('Initializing Clerk...');
-                await Clerk.load({ publishableKey: CLERK_PUBLISHABLE_KEY });
-                clerk = Clerk;
-
-                if (Clerk.user) {
-                    console.log('User found:', Clerk.user);
-                    await handleSignedIn(Clerk.user);
-                } else {
-                    console.log('No user found, showing auth');
-                    showAuthContainer();
-                }
-
-                if (document.getElementById('clerk-signin')) {
-                    try {
-                        Clerk.mountSignIn(document.getElementById('clerk-signin'), {
-                            signUpUrl: 'https://accounts.askbabushka.ai/sign-up',
-                            afterSignInUrl: window.location.origin,
-                            redirectUrl: window.location.origin
-                        });
-                        console.log('Initial Clerk sign-in mounted');
-                    } catch (error) {
-                        console.error('Error mounting initial sign-in:', error);
-                    }
-                }
-
-                Clerk.addListener((event) => {
-                    console.log('Clerk event:', event.type);
-                    if (event.type === 'user:signed_in') {
-                        handleSignedIn(event.user);
-                    } else if (event.type === 'user:signed_out') {
-                        handleSignedOut();
-                    }
-                });
-
-            } catch (error) {
-                console.error('Error initializing Clerk:', error);
-                showMainApp();
-            }
-        }
+                clerk = new Clerk(CLERK_PUBLISHABLE_KEY);
+                
+                // Load Clerk with domain configuration
+                await clerk.load();
                 
                 console.log('Clerk loaded successfully');
 
