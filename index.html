@@ -6,11 +6,12 @@
     <title>Ask Babushka - Wisdom-Guided Relationship Advice</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Fixed Clerk script - use the general CDN instead of hardcoded domain -->
     <script
       async
       crossorigin="anonymous"
       data-clerk-publishable-key="pk_live_Y2xlcmsuYXNrYmFidXNoa2EuYWkk"
-      src="https://clerk.askbabushka.ai/npm/@clerk/clerk-js@5/dist/clerk.browser.js"
+      src="https://brave-fawn-12.clerk.accounts.dev/npm/@clerk/clerk-js@5/dist/clerk.browser.js"
       type="text/javascript">
     </script>
     <style>
@@ -533,7 +534,7 @@
     </div>
 
     <script>
-        // Updated Clerk publishable key and API configuration
+        // Fixed Clerk configuration
         const CLERK_PUBLISHABLE_KEY = 'pk_live_Y2xlcmsuYXNrYmFidXNoa2EuYWkk';
         const API_BASE_URL = 'https://babushka-production.up.railway.app';
         
@@ -541,7 +542,7 @@
         let currentUser = null;
         let userToken = null;
 
-        // Initialize Clerk with proper domain configuration
+        // Fixed Clerk initialization
         async function initClerk() {
             try {
                 // Check if Clerk is available
@@ -554,8 +555,10 @@
                 console.log('Initializing Clerk...');
                 clerk = new Clerk(CLERK_PUBLISHABLE_KEY);
                 
-                // Load Clerk with domain configuration
-                await clerk.load();
+                // Load Clerk without custom domain configuration
+                await clerk.load({
+                    // Remove custom domain configs that might be causing issues
+                });
                 
                 console.log('Clerk loaded successfully');
 
@@ -568,13 +571,11 @@
                     showAuthContainer();
                 }
 
-                // Mount sign-in component with correct URLs
+                // Mount sign-in component with minimal configuration
                 if (document.getElementById('clerk-signin')) {
                     try {
                         clerk.mountSignIn(document.getElementById('clerk-signin'), {
-                            signUpUrl: 'https://accounts.askbabushka.ai/sign-up',
-                            afterSignInUrl: window.location.origin,
-                            redirectUrl: window.location.origin
+                            // Minimal configuration - let Clerk use defaults
                         });
                         console.log('Initial Clerk sign-in mounted');
                     } catch (error) {
@@ -599,23 +600,18 @@
             }
         }
 
-        // Updated handleSignedIn function with JWT template
+        // Fixed token handling - remove custom template
         async function handleSignedIn(user) {
             console.log('Handling signed in user:', user);
             currentUser = user;
             try {
-                // Use your custom JWT template "AskBabushkaAPI"
-                userToken = await user.getToken({ template: "AskBabushkaAPI" });
-                console.log('Got user token with AskBabushkaAPI template');
+                // Use default token instead of custom template
+                userToken = await user.getToken();
+                console.log('Got user token successfully');
             } catch (error) {
-                console.error('Error getting token with template:', error);
-                // Fallback to default token if template fails
-                try {
-                    userToken = await user.getToken();
-                    console.log('Got fallback token');
-                } catch (fallbackError) {
-                    console.error('Error getting fallback token:', fallbackError);
-                }
+                console.error('Error getting token:', error);
+                // Continue without token for now
+                userToken = null;
             }
             
             // Update user info
@@ -653,9 +649,7 @@
                 setTimeout(() => {
                     try {
                         clerk.mountSignIn(document.getElementById('clerk-signin'), {
-                            signUpUrl: 'https://accounts.askbabushka.ai/sign-up',
-                            afterSignInUrl: window.location.origin,
-                            redirectUrl: window.location.origin
+                            // Minimal configuration
                         });
                         console.log('Clerk sign-in mounted successfully');
                     } catch (error) {
