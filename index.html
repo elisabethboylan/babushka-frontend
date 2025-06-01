@@ -7,11 +7,12 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <!-- FIXED: Use the correct Clerk script URL -->
+    <!-- Clerk authentication script -->
     <script
       async
       crossorigin="anonymous"
       data-clerk-publishable-key="pk_live_Y2xlcmsuYXNrYmFidXNoa2EuYWkk"
-      src="https://cdn.clerk.com/script.js"
+      src="https://clerk.askbabushka.ai/npm/@clerk/clerk-js@5/dist/clerk.browser.js"
       type="text/javascript">
     </script>
     <style>
@@ -542,22 +543,22 @@
         let currentUser = null;
         let userToken = null;
         
-        // Modern Clerk initialization
-        function initClerk() {
+        // Initialize Clerk when the Clerk script is loaded
+        document.addEventListener('DOMContentLoaded', () => {
             // Initialize Clerk with the publishable key from the script tag
             clerk = new ClerkJS();
-        
+            
             // Set up event listeners
             clerk.on('user:signed_in', (user) => {
                 console.log('User signed in:', user);
                 handleSignedIn(user);
             });
-        
+
             clerk.on('user:signed_out', () => {
                 console.log('User signed out');
                 handleSignedOut();
             });
-        
+
             // Check if user is already signed in
             const user = clerk.user;
             if (user) {
@@ -567,14 +568,8 @@
                 console.log('No user signed in, showing auth');
                 showAuthContainer();
             }
-        }
-        
-        // Initialize Clerk when the Clerk script is loaded
-        document.addEventListener('clerk-ready', () => {
-            console.log('Clerk is ready');
-            initClerk();
         });
-        
+
         // Fallback if Clerk doesn't load
         setTimeout(() => {
             if (!window.ClerkJS) {
