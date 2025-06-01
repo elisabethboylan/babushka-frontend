@@ -9,10 +9,8 @@
     <!-- FIXED: Use the correct Clerk script URL -->
     <!-- Clerk authentication script -->
     <script
-      async
-      crossorigin="anonymous"
-      data-clerk-publishable-key="pk_live_Y2xlcmsuYXNrYmFidXNoa2EuYWkk"
       src="https://clerk.askbabushka.ai/npm/@clerk/clerk-js@5/dist/clerk.browser.js"
+      data-clerk-publishable-key="pk_live_Y2xlcmsuYXNrYmFidXNoa2EuYWkk"
       type="text/javascript">
     </script>
     <style>
@@ -545,38 +543,40 @@
         
         // Initialize Clerk when the Clerk script is loaded
         document.addEventListener('DOMContentLoaded', () => {
-            // Initialize Clerk with the publishable key from the script tag
-            clerk = new ClerkJS();
-            
-            // Set up event listeners
-            clerk.on('user:signed_in', (user) => {
-                console.log('User signed in:', user);
-                handleSignedIn(user);
-            });
+            try {
+                // Wait for Clerk to be available
+                if (!window.ClerkJS) {
+                    console.error('ClerkJS not available');
+                    return;
+                }
 
-            clerk.on('user:signed_out', () => {
-                console.log('User signed out');
-                handleSignedOut();
-            });
+                // Initialize Clerk
+                clerk = new ClerkJS();
+                
+                // Set up event listeners
+                clerk.on('user:signed_in', (user) => {
+                    console.log('User signed in:', user);
+                    handleSignedIn(user);
+                });
 
-            // Check if user is already signed in
-            const user = clerk.user;
-            if (user) {
-                console.log('User already signed in:', user);
-                handleSignedIn(user);
-            } else {
-                console.log('No user signed in, showing auth');
-                showAuthContainer();
+                clerk.on('user:signed_out', () => {
+                    console.log('User signed out');
+                    handleSignedOut();
+                });
+
+                // Check if user is already signed in
+                const user = clerk.user;
+                if (user) {
+                    console.log('User already signed in:', user);
+                    handleSignedIn(user);
+                } else {
+                    console.log('No user signed in, showing auth');
+                    showAuthContainer();
+                }
+            } catch (error) {
+                console.error('Error initializing Clerk:', error);
             }
         });
-
-        // Fallback if Clerk doesn't load
-        setTimeout(() => {
-            if (!window.ClerkJS) {
-                console.error('Clerk failed to load, falling back to anonymous mode');
-                showMainApp();
-            }
-        }, 5000);
         
 
         // Handle signed in user with your custom JWT template
