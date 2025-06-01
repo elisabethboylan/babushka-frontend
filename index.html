@@ -9,9 +9,9 @@
     <!-- FIXED: Use the correct Clerk script URL -->
     <!-- Clerk authentication script -->
     <script
-      src="https://cdn.clerk.com/javascript/v4/clerk.js"
-      data-clerk-key="pk_live_Y2xlcmsuYXNrYmFidXNoa2EuYWkk"
-      type="text/javascript">
+      async
+      src="https://clerk.askbabushka.ai/npm/@clerk/clerk-js@5/dist/clerk.browser.js"
+      data-clerk-publishable-key="pk_live_Y2xlcmsuYXNrYmFidXNoa2EuYWkk">
     </script>
     <style>
         * {
@@ -547,8 +547,16 @@
                 // Wait for Clerk to be available
                 if (!window.ClerkJS) {
                     console.error('ClerkJS not available');
-                    // Show auth container even if Clerk fails to load
-                    showAuthContainer();
+                    // Show auth container with fallback message
+                    const authContainer = document.getElementById('authContainer');
+                    authContainer.innerHTML = `
+                        <div style="text-align: center; padding: 40px;">
+                            <h2>Authentication Error</h2>
+                            <p>There was an issue loading the authentication system.</p>
+                            <p>Please try again later or <a href="https://accounts.askbabushka.ai/sign-in">visit our sign-in page directly</a>.</p>
+                        </div>
+                    `;
+                    authContainer.classList.add('show');
                     return;
                 }
 
@@ -577,8 +585,16 @@
                 }
             } catch (error) {
                 console.error('Error initializing Clerk:', error);
-                // Show auth container if initialization fails
-                showAuthContainer();
+                // Show auth container with error message
+                const authContainer = document.getElementById('authContainer');
+                authContainer.innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <h2>Authentication Error</h2>
+                        <p>There was an issue initializing the authentication system.</p>
+                        <p>Please try again later or <a href="https://accounts.askbabushka.ai/sign-in">visit our sign-in page directly</a>.</p>
+                    </div>
+                `;
+                authContainer.classList.add('show');
             }
         });
 
@@ -586,15 +602,17 @@
         setTimeout(() => {
             if (!clerk) {
                 console.log('Clerk not initialized, showing auth container');
-                showAuthContainer();
+                const authContainer = document.getElementById('authContainer');
+                authContainer.innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <h2>Authentication Error</h2>
+                        <p>Authentication system failed to initialize.</p>
+                        <p>Please try again later or <a href="https://accounts.askbabushka.ai/sign-in">visit our sign-in page directly</a>.</p>
+                    </div>
+                `;
+                authContainer.classList.add('show');
             }
         }, 2000);
-
-        // Initialize Clerk immediately
-        if (typeof window.ClerkJS !== 'undefined') {
-            console.log('ClerkJS is available, initializing...');
-            clerk = new ClerkJS();
-        }
         
 
         // Handle signed in user with your custom JWT template
