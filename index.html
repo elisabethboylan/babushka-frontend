@@ -788,21 +788,41 @@
         });
 
         // Initialize when page loads
-        window.addEventListener('load', () => {
-            console.log('Page loaded, initializing...');
-            initClerk();
-        });
-
-        // Additional initialization attempt when Clerk script loads
+        // Only one initialization attempt
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('DOM loaded');
-            // Give a bit more time for the Clerk script to load
-            setTimeout(() => {
-                if (!clerk) {
-                    console.log('Retrying Clerk initialization...');
-                    initClerk();
+            try {
+                // Wait for Clerk to be available
+                if (!window.ClerkJS) {
+                    console.error('ClerkJS not available');
+                    return;
                 }
-            }, 1000);
+
+                // Initialize Clerk
+                clerk = new ClerkJS();
+                
+                // Set up event listeners
+                clerk.on('user:signed_in', (user) => {
+                    console.log('User signed in:', user);
+                    handleSignedIn(user);
+                });
+
+                clerk.on('user:signed_out', () => {
+                    console.log('User signed out');
+                    handleSignedOut();
+                });
+
+                // Check if user is already signed in
+                const user = clerk.user;
+                if (user) {
+                    console.log('User already signed in:', user);
+                    handleSignedIn(user);
+                } else {
+                    console.log('No user signed in, showing auth');
+                    showAuthContainer();
+                }
+            } catch (error) {
+                console.error('Error initializing Clerk:', error);
+            }
         });
     </script>
 </body>
