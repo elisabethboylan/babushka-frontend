@@ -547,6 +547,8 @@
                 // Wait for Clerk to be available
                 if (!window.ClerkJS) {
                     console.error('ClerkJS not available');
+                    // Show auth container even if Clerk fails to load
+                    showAuthContainer();
                     return;
                 }
 
@@ -575,8 +577,18 @@
                 }
             } catch (error) {
                 console.error('Error initializing Clerk:', error);
+                // Show auth container if initialization fails
+                showAuthContainer();
             }
         });
+
+        // Fallback: Show auth container after a short delay
+        setTimeout(() => {
+            if (!clerk) {
+                console.log('Clerk not initialized, showing auth container');
+                showAuthContainer();
+            }
+        }, 2000);
         
 
         // Handle signed in user with your custom JWT template
