@@ -11,7 +11,8 @@
     <script
       async
       src="https://clerk.askbabushka.ai/npm/@clerk/clerk-js@5/dist/clerk.browser.js"
-      data-clerk-publishable-key="pk_live_Y2xlcmsuYXNrYmFidXNoa2EuYWkk">
+      data-clerk-publishable-key="pk_live_Y2xlcmsuYXNrYmFidXNoa2EuYWkk"
+      data-clerk-frontend-api="https://accounts.askbabushka.ai">
     </script>
     <style>
         * {
@@ -583,6 +584,33 @@
                     console.log('No user signed in, showing auth');
                     showAuthContainer();
                 }
+
+                // Mount sign-in component
+                const signInDiv = document.getElementById('clerk-signin');
+                if (signInDiv) {
+                    try {
+                        clerk.mountSignIn(signInDiv, {
+                            signInUrl: 'https://accounts.askbabushka.ai/sign-in',
+                            signUpUrl: 'https://accounts.askbabushka.ai/sign-up',
+                            afterSignInUrl: 'https://www.askbabushka.ai',
+                            afterSignUpUrl: 'https://www.askbabushka.ai',
+                            redirectUrl: 'https://www.askbabushka.ai'
+                        });
+                        console.log('Sign-in component mounted');
+                    } catch (error) {
+                        console.error('Error mounting sign-in component:', error);
+                        // Show error message
+                        const authContainer = document.getElementById('authContainer');
+                        authContainer.innerHTML = `
+                            <div style="text-align: center; padding: 40px;">
+                                <h2>Authentication Error</h2>
+                                <p>There was an issue mounting the authentication component.</p>
+                                <p>Please try again later or <a href="https://accounts.askbabushka.ai/sign-in">visit our sign-in page directly</a>.</p>
+                            </div>
+                        `;
+                        authContainer.classList.add('show');
+                    }
+                }
             } catch (error) {
                 console.error('Error initializing Clerk:', error);
                 // Show auth container with error message
@@ -613,6 +641,29 @@
                 authContainer.classList.add('show');
             }
         }, 2000);
+
+        // Initialize Clerk immediately if available
+        if (typeof window.ClerkJS !== 'undefined') {
+            console.log('ClerkJS is available, initializing...');
+            clerk = new ClerkJS();
+            
+            // Mount sign-in component immediately
+            const signInDiv = document.getElementById('clerk-signin');
+            if (signInDiv) {
+                try {
+                    clerk.mountSignIn(signInDiv, {
+                        signInUrl: 'https://accounts.askbabushka.ai/sign-in',
+                        signUpUrl: 'https://accounts.askbabushka.ai/sign-up',
+                        afterSignInUrl: 'https://www.askbabushka.ai',
+                        afterSignUpUrl: 'https://www.askbabushka.ai',
+                        redirectUrl: 'https://www.askbabushka.ai'
+                    });
+                    console.log('Sign-in component mounted immediately');
+                } catch (error) {
+                    console.error('Error mounting sign-in component immediately:', error);
+                }
+            }
+        }
         
 
         // Handle signed in user with your custom JWT template
