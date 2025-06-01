@@ -548,16 +548,8 @@
                 // Wait for Clerk to be available
                 if (!window.ClerkJS) {
                     console.error('ClerkJS not available');
-                    // Show auth container with fallback message
-                    const authContainer = document.getElementById('authContainer');
-                    authContainer.innerHTML = `
-                        <div style="text-align: center; padding: 40px;">
-                            <h2>Authentication Error</h2>
-                            <p>There was an issue loading the authentication system.</p>
-                            <p>Please try again later or <a href="https://accounts.askbabushka.ai/sign-in">visit our sign-in page directly</a>.</p>
-                        </div>
-                    `;
-                    authContainer.classList.add('show');
+                    // Show main app with sign-in link
+                    showMainApp();
                     return;
                 }
 
@@ -581,8 +573,8 @@
                     console.log('User already signed in:', user);
                     handleSignedIn(user);
                 } else {
-                    console.log('No user signed in, showing auth');
-                    showAuthContainer();
+                    console.log('No user signed in, showing main app with sign-in link');
+                    showMainApp();
                 }
 
                 // Mount sign-in component
@@ -599,46 +591,41 @@
                         console.log('Sign-in component mounted');
                     } catch (error) {
                         console.error('Error mounting sign-in component:', error);
-                        // Show error message
-                        const authContainer = document.getElementById('authContainer');
-                        authContainer.innerHTML = `
-                            <div style="text-align: center; padding: 40px;">
-                                <h2>Authentication Error</h2>
-                                <p>There was an issue mounting the authentication component.</p>
-                                <p>Please try again later or <a href="https://accounts.askbabushka.ai/sign-in">visit our sign-in page directly</a>.</p>
-                            </div>
-                        `;
-                        authContainer.classList.add('show');
+                        // Add sign-in link to main app
+                        const authStatus = document.getElementById('authStatus');
+                        if (authStatus) {
+                            authStatus.innerHTML = `
+                                <p style="margin-top: 10px; color: #03ABAF; font-size: 0.9rem;">
+                                    <a href="#" class="sign-in-link" onclick="showAuthContainer(); return false;">
+                                        Sign in for personalized experience
+                                    </a>
+                                </p>
+                            `;
+                        }
                     }
                 }
             } catch (error) {
                 console.error('Error initializing Clerk:', error);
-                // Show auth container with error message
-                const authContainer = document.getElementById('authContainer');
-                authContainer.innerHTML = `
-                    <div style="text-align: center; padding: 40px;">
-                        <h2>Authentication Error</h2>
-                        <p>There was an issue initializing the authentication system.</p>
-                        <p>Please try again later or <a href="https://accounts.askbabushka.ai/sign-in">visit our sign-in page directly</a>.</p>
-                    </div>
-                `;
-                authContainer.classList.add('show');
+                // Show main app with error message
+                showMainApp();
+                const authStatus = document.getElementById('authStatus');
+                if (authStatus) {
+                    authStatus.innerHTML = `
+                        <p style="margin-top: 10px; color: #03ABAF; font-size: 0.9rem;">
+                            <a href="https://accounts.askbabushka.ai/sign-in" target="_blank">
+                                Sign in for personalized experience
+                            </a>
+                        </p>
+                    `;
+                }
             }
         });
 
-        // Fallback: Show auth container after a short delay
+        // Fallback: Show main app after a short delay
         setTimeout(() => {
             if (!clerk) {
-                console.log('Clerk not initialized, showing auth container');
-                const authContainer = document.getElementById('authContainer');
-                authContainer.innerHTML = `
-                    <div style="text-align: center; padding: 40px;">
-                        <h2>Authentication Error</h2>
-                        <p>Authentication system failed to initialize.</p>
-                        <p>Please try again later or <a href="https://accounts.askbabushka.ai/sign-in">visit our sign-in page directly</a>.</p>
-                    </div>
-                `;
-                authContainer.classList.add('show');
+                console.log('Clerk not initialized, showing main app');
+                showMainApp();
             }
         }, 2000);
 
