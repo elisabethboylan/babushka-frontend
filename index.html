@@ -541,74 +541,48 @@
         let clerk;
         let currentUser = null;
         let userToken = null;
-
-        // COMPLETELY REWRITTEN Clerk initialization to fix the constructor issue
-        async function initClerk() {
-            let attempts = 0;
-            const maxAttempts = 10;
-            
-            // Wait for Clerk to be available with retry logic
-            while (attempts < maxAttempts) {
-                if (typeof window.Clerk !== 'undefined') {
-                    console.log('Clerk found on window object');
-                    try {
-                        clerk = new window.Clerk(CLERK_PUBLISHABLE_KEY);
-                        break;
-                    } catch (error) {
-                        console.log('Error with window.Clerk, trying Clerk:', error);
-                    }
-                }
-                
-                if (typeof Clerk !== 'undefined') {
-                    console.log('Clerk found as global');
-                    try {
-                        clerk = new Clerk(CLERK_PUBLISHABLE_KEY);
-                        break;
-                    } catch (error) {
-                        console.log('Error with global Clerk:', error);
-                    }
-                }
-                
-                attempts++;
-                console.log(`Waiting for Clerk... attempt ${attempts}/${maxAttempts}`);
-                await new Promise(resolve => setTimeout(resolve, 200));
-            }
-
-            if (!clerk) {
-                console.error('Failed to initialize Clerk after multiple attempts');
-                showMainApp(); // Fallback to anonymous mode
-                return;
-            }
-
-            try {
-                console.log('Loading Clerk...');
-                await clerk.load();
-                console.log('Clerk loaded successfully');
-
-                // Set up event listeners
-                clerk.addListener((event) => {
-                    console.log('Clerk event:', event.type);
-                    if (event.type === 'user:signed_in') {
-                        handleSignedIn(event.user);
-                    } else if (event.type === 'user:signed_out') {
-                        handleSignedOut();
-                    }
-                });
-
-                // Check current state
-                if (clerk.user) {
-                    console.log('User already signed in:', clerk.user);
-                    await handleSignedIn(clerk.user);
-                } else {
-                    console.log('No user signed in, showing auth');
-                    showAuthContainer();
-                }
-
-            } catch (error) {
-                console.error('Error loading Clerk:', error);
-                showMainApp(); // Fallback to anonymous mode
+        
+        // Modern Clerk initialization
+        function initClerk() {
+            // Initialize Clerk with the publishable key from the script tag
+            clerk = new ClerkJS();
+        
+            // Set up event listeners
+            clerk.on('user:signed_in', (user) => {
+                console.log('User signed in:', user);
+                handleSignedIn(user);
+            });
+        
+            clerk.on('user:signed_out', () => {
+                console.log('User signed out');
+                handleSignedOut();
+            });
+        
+            // Check if user is already signed in
+            const user = clerk.user;
+            if (user) {
+                console.log('User already signed in:', user);
+                handleSignedIn(user);
+            } else {
+                console.log('No user signed in, showing auth');
+                showAuthContainer();
             }
         }
+        
+        // Initialize Clerk when the Clerk script is loaded
+        document.addEventListener('clerk-ready', () => {
+            console.log('Clerk is ready');
+            initClerk();
+        });
+        
+        // Fallback if Clerk doesn't load
+        setTimeout(() => {
+            if (!window.ClerkJS) {
+                console.error('Clerk failed to load, falling back to anonymous mode');
+                showMainApp();
+            }
+        }, 5000);
+        
 
         // Handle signed in user with your custom JWT template
         async function handleSignedIn(user) {
